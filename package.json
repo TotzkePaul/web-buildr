@@ -1,0 +1,22 @@
+{
+  "name": "web-buildr",
+  "version": "1.0.0",
+  "description": "Automate screenshots of variations of websites",
+  "main": "index.js",
+  "author": "Paul Totzke",
+  "license": "ISC",
+  "scripts": {
+    "dev": "vite --debug",
+    "build": "vite build",
+    "serve": "vite preview",
+    "open": "start http://localhost:3000",
+    "start": "npm run open && npm run dev"
+  },
+  "devDependencies": {
+    "vite": "^2.3.0"
+  },
+  "dependencies": {
+    "three": "^0.128.0",
+    "puppeteer": "^9.1.1"
+  }
+}
