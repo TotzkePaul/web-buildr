@@ -14,3 +14,8 @@ In VS CODE, Add this setting to allow env varible overrides:
 
 
 Most recent change: added CCapture for recording frames.
+
+This folder:
+https://github.com/TotzkePaul/web-buildr/tree/master/src
+comes from:
+https://github.com/mrdoob/three.js
