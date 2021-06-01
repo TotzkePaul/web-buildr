@@ -1,7 +1,7 @@
 module.exports = {
-    root: '.build',
+    root: '.build/',
     build: {
-      outDir: '.build',
+      outDir: 'vite_build',
       minify: false
     }
   }

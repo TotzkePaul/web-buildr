@@ -1,0 +1,20 @@
+
+// If one would like to add/remove/modify user preferences without modifying the content of the
+// workspace settings file, then one would need to modify the `settings.json` under here:
+// - Windows: %APPDATA%\Code\User\settings.json
+// - Linux: $HOME/.config/Code/User/settings.json
+// - Mac: $HOME/Library/Application Support/Code/User/settings.json
+{
+    // These are set when the Powershell Integrated Console Cannot debug until the PowerShell session has started. 
+    // Re-runs will continute to use
+    // You can click the trash can to delete it and restart to make updates
+    // Go to the Menu bar > Terminal > New Terminal if one isn't below
+    // Run "Show Env Varibles" first to set and verify
+    // Sadly, it looks like %APPDATA%\Code\User\settings.json does not override these settings.
+    "terminal.integrated.env.windows": {
+        //"PATH": "C:\\CustomPathHere;${env:PATH}"
+        "CLEAN":"true",
+        "FFMPEG_PATH" : "../ffmpeg/bin/ffmpeg.exe",
+        "FFPROBE_PATH" : "../ffmpeg/bin/ffprobe.exe"
+    }
+}

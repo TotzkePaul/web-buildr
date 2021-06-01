@@ -1,152 +1,123 @@
-import './theme.css';
-import spaceJpg from './space.jpg'
-import moonJpg from './moon.jpg'
-import normalJpg from './normal.jpg'
-import profileJpg from './profile.jpg'
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+      //https://github.com/mrdoob/three.js/tree/master/examples/jsm/loaders
+			import Stats from './js/stats.module.js';
 
-// Setup
+			import { ColladaLoader } from './js/ColladaLoader.js';
 
-const scene = new THREE.Scene();
+      // https://github.com/mrdoob/three.js/tree/master/examples/jsm/controls
+			import { OrbitControls } from './js/OrbitControls.js';
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+			let container, stats, clock, controls;
+			let camera, scene, renderer, mixer;
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector('#bg'),
-});
+			init();
+			animate();
 
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-camera.position.setZ(30);
-camera.position.setX(-3);
+			function init() {
 
-renderer.render(scene, camera);
+				container = document.getElementById( 'container' );
 
-// Torus
+				camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera.position.set( 15, 10, - 15 );
 
-const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-const material = new THREE.MeshStandardMaterial({ color: 0xff6347 });
-const torus = new THREE.Mesh(geometry, material);
+				scene = new THREE.Scene();
 
-scene.add(torus);
+				clock = new THREE.Clock();
 
-// Lights
+				// collada
 
-const pointLight = new THREE.PointLight(0xffffff);
-pointLight.position.set(5, 5, 5);
+				const loader = new ColladaLoader();
+				loader.load( './imgs/stormtrooper.dae', function ( collada ) {
 
-const ambientLight = new THREE.AmbientLight(0xffffff);
-scene.add(pointLight, ambientLight);
+					const avatar = collada.scene;
+					const animations = avatar.animations;
 
-// Helpers
+					avatar.traverse( function ( node ) {
 
-// const lightHelper = new THREE.PointLightHelper(pointLight)
-// const gridHelper = new THREE.GridHelper(200, 50);
-// scene.add(lightHelper, gridHelper)
+						if ( node.isSkinnedMesh ) {
 
-// const controls = new OrbitControls(camera, renderer.domElement);
+							node.frustumCulled = false;
 
-function addStar() {
-  const geometry = new THREE.SphereGeometry(0.25, 24, 24);
-  const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-  const star = new THREE.Mesh(geometry, material);
+						}
 
-  const [x, y, z] = Array(3)
-    .fill()
-    .map(() => THREE.MathUtils.randFloatSpread(100));
+					} );
 
-  star.position.set(x, y, z);
-  scene.add(star);
-}
+					mixer = new THREE.AnimationMixer( avatar );
+					mixer.clipAction( animations[ 0 ] ).play();
 
-Array(200).fill().forEach(addStar);
+					scene.add( avatar );
 
-// Background
+				} );
 
-const spaceTexture = new THREE.TextureLoader().load('space.jpg');
-scene.background = spaceTexture;
+				//
 
-// Avatar
+				const gridHelper = new THREE.GridHelper( 10, 20, 0x888888, 0x444444 );
+				scene.add( gridHelper );
 
-const profileTexture = new THREE.TextureLoader().load('profile.jpg');
+				//
 
-const profile = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshBasicMaterial({ map: profileTexture }));
+				const ambientLight = new THREE.AmbientLight( 0xffffff, 0.2 );
+				scene.add( ambientLight );
 
-scene.add(profile);
+				const pointLight = new THREE.PointLight( 0xffffff, 0.8 );
+				scene.add( camera );
+				camera.add( pointLight );
 
-// Moon
+				//
 
-const moonTexture = new THREE.TextureLoader().load('moon.jpg');
-const normalTexture = new THREE.TextureLoader().load('normal.jpg');
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
 
-const moon = new THREE.Mesh(
-  new THREE.SphereGeometry(3, 32, 32),
-  new THREE.MeshStandardMaterial({
-    map: moonTexture,
-    normalMap: normalTexture,
-  })
-);
+				//
 
-scene.add(moon);
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.screenSpacePanning = true;
+				controls.minDistance = 5;
+				controls.maxDistance = 40;
+				controls.target.set( 0, 2, 0 );
+				controls.update();
 
-moon.position.z = 30;
-moon.position.setX(-10);
+				//
 
-profile.position.z = -5;
-profile.position.x = 2;
+				stats = new Stats();
+				container.appendChild( stats.dom );
 
-// Scroll Animation
-let t =0;
-function moveCamera() {
-  //moon.rotation.x += 0.05;
-  //moon.rotation.y += 0.075;
-  //moon.rotation.z += 0.05;
+				//
 
-  profile.rotation.y += 0.01;
-  profile.rotation.z += 0.01;
+				window.addEventListener( 'resize', onWindowResize );
 
-  camera.position.z = t * -0.01;
-  camera.position.x = t * -0.0002;
-  camera.rotation.y = t * -0.0002;
-  
-  t-=10;
-}
+			}
 
-const urlParams = new URLSearchParams(window.location.search);
-const mode = urlParams.get('mode');
+			function onWindowResize() {
 
-switch (mode) {
-  case 'r':
-    window.moveCamera = moveCamera;
-    break;
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
 
-  default: //person
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
-    document.body.onscroll = moveCamera;
-    moveCamera();
-    setInterval(function(){ 
-      moveCamera();
-    }, 1000/33.33333); // 30 "frames" per second where moveCamera() creates a new frame.
-    
-    break;
-}
+			}
 
+			function animate() {
 
-// Animation Loop
+				requestAnimationFrame( animate );
 
-function animate() {
-  requestAnimationFrame(animate);
+				render();
+				stats.update();
 
-  //torus.rotation.x += 0.01;
-  //torus.rotation.y += 0.005;
-  //torus.rotation.z += 0.01;
+			}
 
-  //moon.rotation.x += 0.05;
+			function render() {
 
-  // controls.update();
+				const delta = clock.getDelta();
 
-  renderer.render(scene, camera);
-}
+				if ( mixer !== undefined ) {
 
-animate();
+					mixer.update( delta );
+
+				}
+
+				renderer.render( scene, camera );
+
+			}
